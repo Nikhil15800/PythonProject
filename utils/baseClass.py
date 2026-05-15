@@ -32,11 +32,6 @@ class BaseClass:
         self.findElement(by, value).click()
         self.logger.info(f"Clicked element: {by}={value}")
 
-    def clickElementJS(self, by, value):
-        element = self.findElement(by, value)
-        self.driver.execute_script("arguments[0].scrollIntoView(true); arguments[0].click();", element)
-        self.logger.info(f"JS clicked element: {by}={value}")
-
     def sendKeys(self, by, value, text):
         self.findElement(by, value).send_keys(text)
         self.logger.info(f"Sent keys '{text}' to element: {by}={value}")
@@ -47,38 +42,6 @@ class BaseClass:
             return True
         except:
             return False
-
-    def dismissAdPopupIfPresent(self):
-        popup_selectors = [
-            (By.ID, "dismiss-button-element"),
-        ]
-        for by, value in popup_selectors:
-            elements = self.driver.find_elements(by, value)
-            if elements:
-                for popup_close in elements:
-                    try:
-                        if popup_close.is_displayed() and popup_close.is_enabled():
-                            popup_close.click()
-                            self.logger.info(f"Dismissed ad popup: {by}={value}")
-                            return True
-                    except Exception as e:
-                        self.logger.warning(f"Could not click ad popup close button {by}={value}: {e}")
-                        try:
-                            self.driver.execute_script("arguments[0].click();", popup_close)
-                            self.logger.info(f"Dismissed ad popup with JS click: {by}={value}")
-                            return True
-                        except Exception as js_e:
-                            self.logger.warning(f"JS click also failed for ad popup {by}={value}: {js_e}")
-        try:
-            dismissed = self.driver.execute_script(
-                "var el = document.getElementById('dismiss-button-element'); if (el) { el.click(); return true; } return false;"
-            )
-            if dismissed:
-                self.logger.info("Dismissed ad popup using JavaScript selector")
-                return True
-        except Exception as e:
-            self.logger.debug(f"JavaScript popup dismissal check failed: {e}")
-        return False
         
     def waitForElement(self, by, value, timeout=10):
         from selenium.webdriver.support.ui import WebDriverWait
